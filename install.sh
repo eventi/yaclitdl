@@ -1,13 +1,9 @@
 #!/bin/bash
 
-#usage:
-# 	now - Show the current task
-# 	now "A task description" - Interrupt the current task with a new task
-#   next - Move on to the next task
-# 	next "A task description" - Assign a task to do when you finish the current task
-# 	later - Defer the current task till later
-# 	later "A task description" - Assign a task to do later
-# 	tasks
+verbose(){
+	echo Now: `cat .now`
+	echo Next: `tail -1 .next`
+}
 
 now(){
 	task=$*
@@ -23,28 +19,28 @@ now(){
 		[ -e .now ] && cat .now >> .next
 		echo $task > .now
 	fi
-	cat .now
+	verbose
 }
 
 next(){
 	task=$*
 	if [ "x" == "x$task" ] ; then
-#TODO - Save done
-		cat .now >> .done
+		[ -e .now ] && cat .now >> .done
 		tail -1 .next > .now && sed -i.bak -e '$d' .next
-		now
 	else
 		echo $task >> .next
 	fi
+	now
 }
 
 later(){
 	task=$*
 	if [ "x" == "x$task" ]; then
-		now > .later
+		mv .now .later
 		next
 	else
 		echo $task > .later
+		now
 	fi
 	cat .next >> .later
 	mv .later .next
